@@ -1,17 +1,21 @@
 "use strict";
 const fs = require('fs');
+const http = require('http');
 const gulp = require('gulp');
+const browserify = require('browserify');
+const babelify = require('babelify');
+const stringify = require('stringify')
 const jshint = require('gulp-jshint');
 const sass = require('gulp-sass');
 const concat = require('gulp-concat');
 const uglify = require('gulp-uglify');
 const rename = require('gulp-rename');
 const inject = require('gulp-inject');
-const browserify = require('browserify');
-const babelify = require('babelify');
-const stringify = require('stringify')
 
-gulp.task('default', ['inject']);
+/**
+ * Default task bundles app and starts development webserver.
+ */
+gulp.task('default', ['watch', 'serve']);
 
 /**
  * Bundle all JS assets.
@@ -50,7 +54,6 @@ gulp.task('inject', ['bundle'], function() {
     .pipe(gulp.dest('./'));
 });
 
-
 /**
  * Watch files and reinject bundled JS on change.
  */
@@ -62,6 +65,31 @@ gulp.task('watch', ['inject'], function () {
         ], ['inject']
     );
 });
+
+/**
+ * Serve bundled app from development node server. Reloads on change.
+ */
+gulp.task('serve', function() {
+    const host = 'localhost';
+    const port = 3000;
+    let html = fs.readFileSync('./index.html', 'utf8');
+
+    const srv = http.createServer( (req, res) => {
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.end(html);
+    });
+
+    srv.listen(port, host, () => {
+        console.log(`Server listening on ${host}:${port}.`);
+    });
+
+    // Reread index.html on change.
+    gulp.watch(['./index.html'], function() {
+        console.log('Change detected. Reloading.');
+        html = fs.readFileSync('./index.html', 'utf8');
+    });
+});
+
 
 // Bundle JS and inject into HTML
 // gulp.task('bundle', function() {
