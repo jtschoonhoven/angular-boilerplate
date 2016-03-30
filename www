@@ -1,0 +1,26 @@
+#!/usr/local/bin/node
+"use strict";
+
+/**
+ * Simple webserver for development.
+ */
+
+const http = require('http');
+const fs = require('fs');
+
+const PORT = 3000;
+const HOST = 'localhost';
+try {
+    const html = fs.readFileSync('./index.html', 'utf8');
+}
+catch (err) {
+    console.error('Failed to read HTML. Have you bundled with "gulp"?')
+}
+
+http.createServer( (req, res) => {
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.end(html);
+})
+.listen(PORT, HOST, () => {
+    console.log(`Server listening on ${HOST}:${PORT}.`);
+});
